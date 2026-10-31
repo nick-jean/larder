@@ -70,6 +70,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     setState(() {
       _r = Recipe.fromJson(_undo.removeLast());
       _rev++;
+      _typing = null;
       _title.text = _r!.title;
     });
   }
