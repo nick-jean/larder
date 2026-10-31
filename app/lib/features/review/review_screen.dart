@@ -42,6 +42,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   final List<Map<String, dynamic>> _undo = [];
   late final _title = TextEditingController();
   Box? _focusBox;
+  int _rev = 0;
 
   @override
   void dispose() {
@@ -59,6 +60,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     if (_undo.isEmpty) return;
     setState(() {
       _r = Recipe.fromJson(_undo.removeLast());
+      _rev++;
       _title.text = _r!.title;
     });
   }
@@ -218,11 +220,11 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         ),
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 8, children: [
-          _NumberField('Servings', r.servings?.round(), r.servingsConfidence, (v) => _change((x) => x
+          _NumberField('Servings', _rev, r.servings?.round(), r.servingsConfidence, (v) => setState(() => r
             ..servings = v?.toDouble()
             ..servingsConfidence = Confidence.high)),
-          _NumberField('Prep min', r.prepMinutes, r.timesConfidence, (v) => _change((x) => x.prepMinutes = v)),
-          _NumberField('Cook min', r.cookMinutes, r.timesConfidence, (v) => _change((x) => x.cookMinutes = v)),
+          _NumberField('Prep min', _rev, r.prepMinutes, r.timesConfidence, (v) => setState(() => r.prepMinutes = v)),
+          _NumberField('Cook min', _rev, r.cookMinutes, r.timesConfidence, (v) => setState(() => r.cookMinutes = v)),
         ]),
         const SizedBox(height: 16),
         Row(children: [
@@ -331,8 +333,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 }
 
 class _NumberField extends StatelessWidget {
-  const _NumberField(this.label, this.value, this.confidence, this.onChanged);
+  const _NumberField(this.label, this.rev, this.value, this.confidence, this.onChanged);
   final String label;
+  final int rev;
   final int? value;
   final Confidence confidence;
   final void Function(int?) onChanged;
@@ -343,11 +346,11 @@ class _NumberField extends StatelessWidget {
         child: Container(
           color: confidenceColor(confidence),
           child: TextFormField(
-            key: ValueKey('$label$value'),
+            key: ValueKey('$label$rev'),
             initialValue: value?.toString() ?? '',
             keyboardType: TextInputType.number,
             decoration: InputDecoration(labelText: label),
-            onFieldSubmitted: (v) => onChanged(int.tryParse(v.trim())),
+            onChanged: (v) => onChanged(int.tryParse(v.trim())),
           ),
         ),
       );
