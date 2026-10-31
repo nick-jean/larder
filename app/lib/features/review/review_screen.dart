@@ -192,10 +192,11 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         actions: [
           IconButton(icon: const Icon(Icons.undo), tooltip: 'Undo', onPressed: _undo.isEmpty ? null : _undoLast),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Discard',
+            icon: Icon(stored?.needsReview ?? true ? Icons.delete_outline : Icons.close),
+            tooltip: stored?.needsReview ?? true ? 'Discard' : 'Discard changes',
             onPressed: () async {
-              await ref.read(recipesProvider.notifier).delete(r);
+              // A new import is thrown away; an existing recipe just keeps its saved version.
+              if (stored?.needsReview ?? true) await ref.read(recipesProvider.notifier).delete(r);
               if (context.mounted) context.pop();
             },
           ),
