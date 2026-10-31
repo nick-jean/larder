@@ -108,8 +108,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       case 'ok':
         _change((r) => r.ingredients[i].confidence = Confidence.high);
       case 'section':
-        _change((r) => r.ingredients[i] = IngredientLine(id: line.id, raw: line.raw, isSection: !line.isSection, item: line.isSection ? line.item : line.raw.replaceFirst(RegExp(r':\s*$'), ''), provenance: line.provenance)
-          ..quantity = line.isSection ? parseIngredientLine(line.raw).quantity : null);
+        _change((r) => r.ingredients[i] = (line.isSection
+            ? ingredientFromText(line.raw, line.id, line.provenance)
+            : IngredientLine(id: line.id, raw: line.raw, isSection: true, item: line.raw.replaceFirst(RegExp(r':\s*$'), ''), provenance: line.provenance))
+          ..box = line.box);
       case 'merge':
         if (i + 1 >= _r!.ingredients.length) return;
         _change((r) {
