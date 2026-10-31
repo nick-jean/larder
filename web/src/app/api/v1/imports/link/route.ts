@@ -23,11 +23,11 @@ export const POST = authed(async (request, user) => {
     result = await importLink(url, getFetcher(), { metaToken: process.env.META_OEMBED_TOKEN });
     const transient = result.layers.some((l) => l.status === "error");
     if (!transient) {
-      await linkCache.updateOne(
-        { _id: result.receipt!.canonicalUrl },
-        { $set: { result, expiresAt: new Date(Date.now() + CACHE_MS) } },
-        { upsert: true },
-      );
+      // Cached under the submitted URL too, so a link that redirects still hits the cache next time.
+      const keys = new Set([result.receipt!.canonicalUrl, ...(link.isShortLink ? [] : [link.canonicalUrl])]);
+      for (const _id of keys) {
+        await linkCache.updateOne({ _id }, { $set: { result, expiresAt: new Date(Date.now() + CACHE_MS) } }, { upsert: true });
+      }
     }
   }
 
