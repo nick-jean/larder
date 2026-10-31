@@ -45,8 +45,9 @@ export async function runSync(ownerId: string, req: { cursor: string | null; rec
     if (!written) conflicts.push({ id: incoming.id });
   }
 
+  // Inclusive: a write stamped in the same millisecond as the previous cursor must still be returned.
   const since = req.cursor ?? new Date(0).toISOString();
-  const changed = await recipes.find({ ownerId, updatedAt: { $gt: since } }).toArray();
+  const changed = await recipes.find({ ownerId, updatedAt: { $gte: since } }).toArray();
   return { cursor: serverTime, recipes: changed.map((d) => fromDoc<Recipe>(d)), conflicts };
 }
 
