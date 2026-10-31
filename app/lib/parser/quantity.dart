@@ -35,7 +35,8 @@ const _usWeightG = {'oz': 28.3495, 'lb': 453.592};
 const _metricVolumeMl = {'ml': 1.0, 'l': 1000.0};
 const _metricWeightG = {'g': 1.0, 'kg': 1000.0};
 
-double _roundTo(double x, double step) => (x / step).round() * step;
+// Second rounding strips float noise (1.9000000000000001 → 1.9).
+double _roundTo(double x, double step) => ((x / step).round() * step * 1e6).round() / 1e6;
 
 double _roundMetric(double x) {
   if (x < 10) return _roundTo(x, 0.5);
@@ -90,7 +91,11 @@ Converted? convertQuantity(double q, double? max, String? unit, UnitSystem syste
   if (max == null) return Converted(a.$1, null, a.$2);
   if (q == 0) return Converted(a.$1, fn(max, unit)?.$1, a.$2);
   final ratio = a.$1 / q;
-  final b = system == UnitSystem.metric ? _roundMetric(max * ratio) : _roundTo(max * ratio, 0.25);
+  final b = system == UnitSystem.us
+      ? _roundTo(max * ratio, 0.25)
+      : a.$2 == 'l' || a.$2 == 'kg'
+          ? _roundTo(max * ratio, 0.05)
+          : _roundMetric(max * ratio);
   return Converted(a.$1, b, a.$2);
 }
 
