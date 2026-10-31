@@ -35,7 +35,9 @@ export async function runSync(ownerId: string, req: { cursor: string | null; rec
       conflicts.push({ id: incoming.id });
       continue;
     }
-    const doc = toDoc({ ...incoming, ownerId, updatedAt: serverTime });
+    // Tombstones win: an offline edit to a recipe deleted elsewhere is stored still deleted.
+    const deleted = incoming.deleted || (existing?.deleted ?? false);
+    const doc = toDoc({ ...incoming, deleted, ownerId, updatedAt: serverTime });
     // Conditional on the copy we compared against, so a concurrent sync can't be overwritten.
     const written = existing
       ? (await recipes.replaceOne({ _id: doc._id, ownerId, version: existing.version, updatedAt: existing.updatedAt }, doc)).matchedCount === 1
