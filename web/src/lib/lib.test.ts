@@ -7,6 +7,8 @@ describe("isPrivateAddress", () => {
   it.each([
     ["127.0.0.1", true], ["10.1.2.3", true], ["172.20.0.1", true], ["192.168.1.1", true], ["169.254.169.254", true],
     ["100.64.0.1", true], ["::1", true], ["fd00::1", true], ["::ffff:10.0.0.1", true], ["8.8.8.8", false], ["2606:4700::1111", false],
+    ["::ffff:7f00:1", true],
+    ["::ffff:5db8:d822", false],
   ])("%s → %s", (ip, expected) => expect(isPrivateAddress(ip)).toBe(expected));
 });
 
@@ -27,7 +29,8 @@ describe("parseModelOutput", () => {
       source,
     )!;
     expect(d.ingredients[0]).toMatchObject({ quantity: 1, unit: "cup", provenance: "llm" });
-    expect(d.ingredients[1].confidence).toBe("medium");
+    // "1" is in the source, but not on the milk line, so the quantity is dropped.
+    expect(d.ingredients[1]).toMatchObject({ quantity: null, confidence: "low" });
     expect(d.servings).toBeNull();
     expect(parseModelOutput("not json", source)).toBeNull();
   });

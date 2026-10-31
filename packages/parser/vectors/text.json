@@ -1,5 +1,11 @@
 [
   {
+    "name": "unquantified ingredient without headers",
+    "provenance": "pasted_text",
+    "text": "Garlic toast\n2 slices bread\n1 clove garlic\nSalt to taste\nToast the bread.",
+    "expect": { "title": "Garlic toast", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 3, "steps": ["Toast the bread."] }
+  },
+  {
     "name": "caption with headers",
     "provenance": "caption",
     "text": "Creamy Tuscan Chicken 🍗\nServes 4 · Prep 10 min · Cook 25 min\nIngredients:\n2 chicken breasts\n1 cup heavy cream\n½ cup parmesan, grated\nSalt and pepper to taste\nInstructions:\n1. Season the chicken and sear 5 minutes per side.\n2. Add cream and parmesan, simmer until\nthickened.\n3. Serve over pasta.\n#dinner #easyrecipes",

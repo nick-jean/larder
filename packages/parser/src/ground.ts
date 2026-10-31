@@ -23,6 +23,13 @@ function words(text: string): Set<string> {
 export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
   const nums = numbersIn(source);
   const has = (n: number) => nums.some((x) => Math.abs(x - n) < 0.01);
+  // An ingredient quantity must appear on a source line that also names that ingredient.
+  const lines = source.split("\n").map((l) => ({ nums: numbersIn(l), words: words(l) }));
+  const hasFor = (n: number, item: string) => {
+    const w = [...words(item)];
+    if (w.length === 0) return has(n);
+    return lines.some((l) => l.nums.some((x) => Math.abs(x - n) < 0.01) && w.some((x) => l.words.has(x)));
+  };
   const vocab = words(source);
   const overlap = (text: string) => {
     const w = [...words(text)];
@@ -31,12 +38,12 @@ export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
 
   const ingredients = draft.ingredients.map((i) => {
     const next = { ...i, provenance: "llm" as const };
-    if (i.quantity !== null && !has(i.quantity)) {
+    if (i.quantity !== null && !hasFor(i.quantity, i.item)) {
       next.quantity = null;
       next.quantityMax = null;
       next.confidence = "low";
     }
-    if (i.quantityMax !== null && next.quantityMax !== null && !has(i.quantityMax)) {
+    if (i.quantityMax !== null && next.quantityMax !== null && !hasFor(i.quantityMax, i.item)) {
       next.quantityMax = null;
       next.confidence = "low";
     }
@@ -55,6 +62,8 @@ export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
     ...draft,
     title: overlap(draft.title) >= 0.5 ? draft.title : "",
     servings,
+    // The yield text must be from the source too, or it would show the servings we just rejected.
+    yieldText: draft.yieldText && numbersIn(draft.yieldText).every(has) && overlap(draft.yieldText) >= 0.5 ? draft.yieldText : null,
     prepMinutes: keepTime(draft.prepMinutes),
     cookMinutes: keepTime(draft.cookMinutes),
     totalMinutes: keepTime(draft.totalMinutes),

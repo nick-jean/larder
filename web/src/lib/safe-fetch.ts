@@ -31,6 +31,11 @@ export function isPrivateAddress(ip: string): boolean {
     const s = ip.toLowerCase();
     const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(s);
     if (mapped) return isPrivateAddress(mapped[1]);
+    const hexMapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(s);
+    if (hexMapped) {
+      const [hi, lo] = [parseInt(hexMapped[1], 16), parseInt(hexMapped[2], 16)];
+      return isPrivateAddress(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
+    }
     return s === "::" || s === "::1" || /^f[cd]/.test(s) || /^fe[89ab]/.test(s) || s.startsWith("ff");
   }
   return true;

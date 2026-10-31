@@ -203,6 +203,8 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
       mode = "ingredients";
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) addIngredient(text, l);
+    // Short unquantified lines right after ingredients ("Salt to taste") are still ingredients.
+    else if (ingredients.length > 0 && steps.length === 0 && !isStepLike(text) && text.length <= 40 && !/[.!?]$/.test(text)) addIngredient(text, l);
     else if (steps.length > 0 || ingredients.length > 0 || isStepLike(text)) addStep(text, l);
     else if (!title) {
       title = cleanTitle(text);

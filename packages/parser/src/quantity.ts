@@ -35,7 +35,8 @@ const METRIC_VOLUME_ML: Record<string, number> = { ml: 1, l: 1000 };
 const METRIC_WEIGHT_G: Record<string, number> = { g: 1, kg: 1000 };
 
 function roundTo(x: number, step: number): number {
-  return Math.round(x / step) * step;
+  // Second rounding strips float noise (1.9000000000000001 → 1.9).
+  return Math.round(Math.round(x / step) * step * 1e6) / 1e6;
 }
 
 function roundMetric(x: number): number {
@@ -87,7 +88,8 @@ export function convertQuantity(q: number, max: number | null, unit: string | nu
   if (max === null) return { quantity: a.q, quantityMax: null, unit: a.unit };
   // Convert the upper bound into the same unit as the lower one.
   const ratio = q === 0 ? null : a.q / q;
-  const b = ratio === null ? fn(max, unit) : { q: (system === "metric" ? roundMetric : (x: number) => roundTo(x, 0.25))(max * ratio), unit: a.unit };
+  const round = (x: number) => (system === "us" ? roundTo(x, 0.25) : a.unit === "l" || a.unit === "kg" ? roundTo(x, 0.05) : roundMetric(x));
+  const b = ratio === null ? fn(max, unit) : { q: round(max * ratio), unit: a.unit };
   return { quantity: a.q, quantityMax: b?.q ?? null, unit: a.unit };
 }
 
