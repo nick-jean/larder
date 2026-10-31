@@ -133,21 +133,26 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
     final link = _link!;
     final receipt = _result?.receipt;
     final draft = _draft ?? RecipeDraft(title: receipt?.captionSnippet ?? '');
-    _saved = true;
-    await saveDraftForReview(
-      context,
-      ref,
-      draft,
-      RecipeSource(
-        kind: link.platform,
-        url: receipt?.canonicalUrl ?? link.canonicalUrl,
-        creatorHandle: receipt?.creatorHandle ?? link.creatorHandle,
-        creatorName: receipt?.creatorName,
-        retrievedAt: DateTime.now().toUtc().toIso8601String(),
-      ),
-      thumbnailUrl: receipt?.thumbnailUrl,
-      imageKeys: _screenshots,
-    );
+    _saved = true; // set first: saving navigates away, which disposes this screen
+    try {
+      await saveDraftForReview(
+        context,
+        ref,
+        draft,
+        RecipeSource(
+          kind: link.platform,
+          url: receipt?.canonicalUrl ?? link.canonicalUrl,
+          creatorHandle: receipt?.creatorHandle ?? link.creatorHandle,
+          creatorName: receipt?.creatorName,
+          retrievedAt: DateTime.now().toUtc().toIso8601String(),
+        ),
+        thumbnailUrl: receipt?.thumbnailUrl,
+        imageKeys: _screenshots,
+      );
+    } catch (_) {
+      _saved = false;
+      rethrow;
+    }
   }
 
   @override

@@ -72,14 +72,19 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       }
       final draft = structureLines(lines, 'ocr', newId: newId);
       if (!mounted) return;
-      _saved = true;
-      await saveDraftForReview(
-        context,
-        ref,
-        draft,
-        RecipeSource(kind: 'scan', scanType: widget.scanType, pageCount: _pages.length),
-        imageKeys: List.of(_pages),
-      );
+      _saved = true; // set first: saving navigates away, which disposes this screen
+      try {
+        await saveDraftForReview(
+          context,
+          ref,
+          draft,
+          RecipeSource(kind: 'scan', scanType: widget.scanType, pageCount: _pages.length),
+          imageKeys: List.of(_pages),
+        );
+      } catch (_) {
+        _saved = false;
+        rethrow;
+      }
     } catch (e) {
       setState(() => _error = 'Couldn\'t read the photos: $e');
     } finally {
