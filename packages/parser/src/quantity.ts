@@ -35,7 +35,8 @@ const METRIC_VOLUME_ML: Record<string, number> = { ml: 1, l: 1000 };
 const METRIC_WEIGHT_G: Record<string, number> = { g: 1, kg: 1000 };
 
 function roundTo(x: number, step: number): number {
-  return Math.round(x / step) * step;
+  // Second rounding strips float noise (1.9000000000000001 → 1.9).
+  return Math.round(Math.round(x / step) * step * 1e6) / 1e6;
 }
 
 function roundMetric(x: number): number {
