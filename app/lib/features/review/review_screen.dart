@@ -43,6 +43,14 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   late final _title = TextEditingController();
   Box? _focusBox;
   int _rev = 0;
+  String? _typing;
+
+  /// Typing in one number field is a single undo step.
+  void _changeNumber(String field, void Function(Recipe r) fn) {
+    if (_typing != field) _change((_) {});
+    _typing = field;
+    setState(() => fn(_r!));
+  }
 
   @override
   void dispose() {
@@ -51,6 +59,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   }
 
   void _change(void Function(Recipe r) fn) {
+    _typing = null;
     _undo.add(_r!.toJson());
     if (_undo.length > 50) _undo.removeAt(0);
     setState(() => fn(_r!));
@@ -222,11 +231,11 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         ),
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 8, children: [
-          _NumberField('Servings', _rev, r.servings?.round(), r.servingsConfidence, (v) => setState(() => r
+          _NumberField('Servings', _rev, r.servings?.round(), r.servingsConfidence, (v) => _changeNumber('servings', (r) => r
             ..servings = v?.toDouble()
             ..servingsConfidence = Confidence.high)),
-          _NumberField('Prep min', _rev, r.prepMinutes, r.timesConfidence, (v) => setState(() => r.prepMinutes = v)),
-          _NumberField('Cook min', _rev, r.cookMinutes, r.timesConfidence, (v) => setState(() => r.cookMinutes = v)),
+          _NumberField('Prep min', _rev, r.prepMinutes, r.timesConfidence, (v) => _changeNumber('prep', (r) => r.prepMinutes = v)),
+          _NumberField('Cook min', _rev, r.cookMinutes, r.timesConfidence, (v) => _changeNumber('cook', (r) => r.cookMinutes = v)),
         ]),
         const SizedBox(height: 16),
         Row(children: [
