@@ -29,7 +29,8 @@ describe("parseModelOutput", () => {
       source,
     )!;
     expect(d.ingredients[0]).toMatchObject({ quantity: 1, unit: "cup", provenance: "llm" });
-    expect(d.ingredients[1].confidence).toBe("medium");
+    // "1" is in the source, but not on the milk line, so the quantity is dropped.
+    expect(d.ingredients[1]).toMatchObject({ quantity: null, confidence: "low" });
     expect(d.servings).toBeNull();
     expect(parseModelOutput("not json", source)).toBeNull();
   });
