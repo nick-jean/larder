@@ -53,9 +53,13 @@ class ApiClient {
     final token = await _token();
     if (token == null) throw ApiException(401, 'Sign in to import links');
     final headers = {'authorization': 'Bearer $token', 'content-type': 'application/json'};
-    final res = method == 'GET'
-        ? await _client.get(uri, headers: headers)
-        : await _client.post(uri, headers: headers, body: jsonEncode(body ?? {}));
+    // No redirects: the bearer token must only reach the validated host.
+    final req = http.Request(method, uri)
+      ..followRedirects = false
+      ..headers.addAll(headers);
+    if (method != 'GET') req.body = jsonEncode(body ?? {});
+    final res = await http.Response.fromStream(await _client.send(req));
+    if (res.statusCode >= 300 && res.statusCode < 400) throw ApiException(res.statusCode, 'Unexpected redirect from the Larder server');
     final data = res.body.isEmpty ? <String, dynamic>{} : jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode >= 400) throw ApiException(res.statusCode, data['error'] as String? ?? 'Request failed (${res.statusCode})');
     return data;
