@@ -36,8 +36,10 @@ void main() {
       settings = await Settings.load(store);
       var n = 0;
       final draft = structureText('Garlic Noodles\nServes 2\n1 cup noodles\n2 cloves garlic\nCook the noodles.', 'pasted_text', newId: () => 'l${n++}');
-      await store.put(Recipe.fromDraft(draft, id: 'r1', source: const RecipeSource(kind: 'manual'), now: DateTime.utc(2026, 10, 31))..status = 'saved');
-      await store.put(Recipe.fromDraft(RecipeDraft(title: 'Mystery card'), id: 'r2', source: const RecipeSource(kind: 'scan', scanType: 'handwritten', pageCount: 1), now: DateTime.utc(2026, 10, 30)));
+      await store.put(Recipe.fromDraft(draft, id: 'r1', source: const RecipeSource(kind: 'manual'), now: DateTime.utc(2026, 10, 31))
+        ..status = 'saved'
+        ..ownerId = settings.guestId);
+      await store.put(Recipe.fromDraft(RecipeDraft(title: 'Mystery card'), id: 'r2', source: const RecipeSource(kind: 'scan', scanType: 'handwritten', pageCount: 1), now: DateTime.utc(2026, 10, 30))..ownerId = settings.guestId);
     });
 
     await tester.runAsync(() async {

@@ -49,7 +49,7 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
 
   Future<List<Recipe>> _load() async {
     final owner = ref.read(ownerIdProvider);
-    return (await _store.recipes()).where((r) => r.ownerId == owner || r.ownerId.isEmpty).toList();
+    return (await _store.recipes()).where((r) => r.ownerId == owner).toList();
   }
 
   Future<void> reload() async => state = AsyncData(await _load());
