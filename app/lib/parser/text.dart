@@ -37,6 +37,11 @@ final _noise = RegExp(
   caseSensitive: false,
 );
 
+final _unquantified = RegExp(
+  r'^(?:some|a few|a little)\b|\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b',
+  caseSensitive: false,
+);
+
 bool isStepLike(String line) {
   final t = stripBullet(line);
   if (_numbered.hasMatch(t) && !looksLikeIngredient(t.replaceFirst(_numbered, ''))) return true;
@@ -201,8 +206,8 @@ RecipeDraft structureLines(List<InputLine> input, String provenance, {required S
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) {
       addIngredient(text, l);
-    } else if (ingredients.isNotEmpty && steps.isEmpty && !isStepLike(text) && text.length <= 40 && !RegExp(r'[.!?]$').hasMatch(text)) {
-      // Short unquantified lines right after ingredients ("Salt to taste") are still ingredients.
+    } else if (ingredients.isNotEmpty && steps.isEmpty && _unquantified.hasMatch(text) && !isStepLike(text)) {
+      // Unquantified ingredients right after the list ("Salt to taste", "Parsley, for serving").
       addIngredient(text, l);
     } else if (steps.isNotEmpty || ingredients.isNotEmpty || isStepLike(text)) {
       addStep(text, l);
