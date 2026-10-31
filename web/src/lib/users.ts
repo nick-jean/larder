@@ -12,6 +12,7 @@ export function monthKey(date = new Date()): string {
 export async function getOrCreateUser(user: AuthUser): Promise<UserProfile> {
   const { users } = await collections();
   const now = new Date().toISOString();
+  await users.updateOne({ _id: user.uid, importMonth: { $ne: monthKey() } }, { $set: { importMonth: monthKey(), importsThisMonth: 0 } });
   const doc = await users.findOneAndUpdate(
     { _id: user.uid },
     {
