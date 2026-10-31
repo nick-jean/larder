@@ -33,7 +33,6 @@ export const POST = authed(async (request, user) => {
       }
     } catch (err) {
       console.error(err);
-      await refundImport(user.uid);
     }
     if (!usedAi) await refundImport(user.uid);
   }
