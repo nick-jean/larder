@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../../import_flow.dart';
 import '../../models/recipe.dart';
@@ -38,13 +36,12 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         _ => 'Fill the frame with the page and avoid glare. Add the next page if the recipe continues.',
       };
 
-  /// Copies picked photos into app storage so the review screen can show the source later.
-  Future<String> _keep(XFile f) async {
-    final dir = Directory(p.join((await getApplicationDocumentsDirectory()).path, 'scans'));
-    await dir.create(recursive: true);
-    final dest = p.join(dir.path, '${newId()}${p.extension(f.path).isEmpty ? '.jpg' : p.extension(f.path)}');
-    await File(f.path).copy(dest);
-    return dest;
+  bool _saved = false;
+
+  @override
+  void dispose() {
+    if (!_saved) discardImages(_pages);
+    super.dispose();
   }
 
   Future<void> _add(ImageSource source) async {
@@ -53,7 +50,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         ? [?await picker.pickImage(source: source, imageQuality: 90)]
         : await picker.pickMultiImage(imageQuality: 90, limit: maxPages - _pages.length);
     for (final f in files.take(maxPages - _pages.length)) {
-      final path = await _keep(f);
+      final path = await keepImage(f.path);
       setState(() => _pages.add(path));
     }
   }
@@ -75,6 +72,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       }
       final draft = structureLines(lines, 'ocr', newId: newId);
       if (!mounted) return;
+      _saved = true;
       await saveDraftForReview(
         context,
         ref,
@@ -137,7 +135,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                             iconSize: 16,
                             icon: const Icon(Icons.close),
                             tooltip: 'Remove page',
-                            onPressed: () => setState(() => _pages.removeAt(i)),
+                            onPressed: () {
+                              discardImages([_pages[i]]);
+                              setState(() => _pages.removeAt(i));
+                            },
                           ),
                         ),
                       ]),

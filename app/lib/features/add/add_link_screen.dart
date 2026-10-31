@@ -25,8 +25,14 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
   String? _error;
   ClassifiedLink? _link;
   ImportResult? _result;
-  RecipeDraft? _draft;
+  RecipeDraft? _base; // from the server and pasted captions
+  RecipeDraft? _draft; // _base plus everything read from screenshots
   final List<String> _screenshots = [];
+  final List<InputLine> _ocrLines = [];
+  bool _saved = false;
+
+  /// All screenshots are structured together so a recipe split across several isn't cut off.
+  void _recompute() => _draft = _ocrLines.isEmpty ? _base : mergeDrafts(_base, structureLines(_ocrLines, 'ocr', newId: newId));
 
   @override
   void initState() {
@@ -38,6 +44,7 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
   void dispose() {
     _url.dispose();
     _caption.dispose();
+    if (!_saved) discardImages(_screenshots);
     super.dispose();
   }
 
@@ -63,14 +70,16 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
       _error = null;
       _link = link;
       _result = null;
-      _draft = null;
+      _base = null;
+      _recompute();
     });
     final api = ref.read(apiProvider);
     try {
       final result = await api.importLink(link.canonicalUrl);
       setState(() {
         _result = result;
-        _draft = result.draft;
+        _base = result.draft;
+        _recompute();
       });
     } catch (e) {
       // Offline, not signed in, or no server: keep the link and creator, and ask for the caption.
@@ -89,7 +98,10 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
     final text = _caption.text.trim();
     if (text.isEmpty) return;
     final d = structureText(text, 'pasted_text', newId: newId);
-    setState(() => _draft = mergeDrafts(_draft, d));
+    setState(() {
+      _base = mergeDrafts(_base, d);
+      _recompute();
+    });
     if (!hasRecipe(d)) setState(() => _error = 'Couldn\'t find ingredients or steps in that text. You can still save and edit it.');
   }
 
@@ -99,9 +111,13 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
     setState(() => _busy = true);
     final ocr = OcrService();
     try {
-      final lines = await ocr.recognize(picked.path, _screenshots.length);
-      _screenshots.add(picked.path);
-      setState(() => _draft = mergeDrafts(_draft, structureLines(lines, 'ocr', newId: newId)));
+      final path = await keepImage(picked.path);
+      _screenshots.add(path);
+      final lines = await ocr.recognize(path, _screenshots.length - 1);
+      setState(() {
+        _ocrLines.addAll(lines);
+        _recompute();
+      });
     } catch (e) {
       setState(() => _error = 'Couldn\'t read that image: $e');
     } finally {
@@ -114,6 +130,7 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
     final link = _link!;
     final receipt = _result?.receipt;
     final draft = _draft ?? RecipeDraft(title: receipt?.captionSnippet ?? '');
+    _saved = true;
     await saveDraftForReview(
       context,
       ref,
