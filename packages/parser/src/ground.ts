@@ -23,8 +23,12 @@ function words(text: string): Set<string> {
 export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
   const nums = numbersIn(source);
   const has = (n: number) => nums.some((x) => Math.abs(x - n) < 0.01);
-  // An ingredient quantity must appear on a source line that also names that ingredient.
-  const lines = source.split("\n").map((l) => ({ nums: numbersIn(l), words: words(l) }));
+  // An ingredient quantity must appear near a mention of that ingredient (same or next line, for wrapped OCR).
+  const raw = source.split("\n");
+  const lines = raw.map((l, i) => {
+    const t = `${l} ${raw[i + 1] ?? ""}`;
+    return { nums: numbersIn(t), words: words(t) };
+  });
   const hasFor = (n: number, item: string) => {
     const w = [...words(item)];
     if (w.length === 0) return has(n);

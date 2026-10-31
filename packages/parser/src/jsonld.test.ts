@@ -67,4 +67,10 @@ describe("groundDraft", () => {
     expect(g.servings).toBeNull();
     expect(g.foundIn).toContain("llm");
   });
+
+  it("keeps quantities of ingredients wrapped across OCR lines", () => {
+    const source = "Bread\n3 cups\nbread flour\nMix and bake.";
+    const draft = structureText("Bread\n3 cups bread flour\nMix and bake.", "llm");
+    expect(groundDraft(draft, source).ingredients[0]).toMatchObject({ quantity: 3, item: "bread flour" });
+  });
 });
