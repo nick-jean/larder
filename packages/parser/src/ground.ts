@@ -1,4 +1,4 @@
-import { normalizeFractions, parseNumber } from "./ingredient";
+import { normalizeFractions, parseIngredientLine, parseNumber } from "./ingredient";
 import type { RecipeDraft } from "./schema";
 import { minConfidence } from "./text";
 
@@ -23,10 +23,12 @@ function words(text: string): Set<string> {
 export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
   const nums = numbersIn(source);
   const has = (n: number) => nums.some((x) => Math.abs(x - n) < 0.01);
-  // An ingredient quantity must appear near a mention of that ingredient (same or next line, for wrapped OCR).
+  // An ingredient quantity must appear on a source line that also names that ingredient.
+  // A bare quantity line ("3 cups") wrapped by OCR is read together with the next line.
   const raw = source.split("\n");
   const lines = raw.map((l, i) => {
-    const t = `${l} ${raw[i + 1] ?? ""}`;
+    const p = parseIngredientLine(l);
+    const t = p.quantity !== null && !p.item ? `${l} ${raw[i + 1] ?? ""}` : l;
     return { nums: numbersIn(t), words: words(t) };
   });
   const hasFor = (n: number, item: string) => {
