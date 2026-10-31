@@ -1,0 +1,16 @@
+{
+  "format": [[1.5, "1½"], [0.3333333333, "⅓"], [2, "2"], [0.25, "¼"], [2.75, "2¾"], [0.15, "0.15"], [3.99, "4"], [1.125, "1⅛"], [12.4, "12.4"]],
+  "convert": [
+    { "quantity": 1, "max": null, "unit": "cup", "system": "metric", "expect": { "quantity": 237, "quantityMax": null, "unit": "ml" } },
+    { "quantity": 2, "max": null, "unit": "tbsp", "system": "metric", "expect": { "quantity": 30, "quantityMax": null, "unit": "ml" } },
+    { "quantity": 1, "max": null, "unit": "lb", "system": "metric", "expect": { "quantity": 455, "quantityMax": null, "unit": "g" } },
+    { "quantity": 8, "max": null, "unit": "oz", "system": "metric", "expect": { "quantity": 227, "quantityMax": null, "unit": "g" } },
+    { "quantity": 200, "max": null, "unit": "g", "system": "us", "expect": { "quantity": 7, "quantityMax": null, "unit": "oz" } },
+    { "quantity": 250, "max": null, "unit": "ml", "system": "us", "expect": { "quantity": 1, "quantityMax": null, "unit": "cup" } },
+    { "quantity": 1, "max": null, "unit": "kg", "system": "us", "expect": { "quantity": 2.25, "quantityMax": null, "unit": "lb" } },
+    { "quantity": 5, "max": null, "unit": "ml", "system": "us", "expect": { "quantity": 1, "quantityMax": null, "unit": "tsp" } },
+    { "quantity": 2, "max": 3, "unit": "tbsp", "system": "metric", "expect": { "quantity": 30, "quantityMax": 45, "unit": "ml" } },
+    { "quantity": 1, "max": null, "unit": "clove", "system": "metric", "expect": null },
+    { "quantity": 100, "max": null, "unit": "g", "system": "metric", "expect": null }
+  ]
+}
