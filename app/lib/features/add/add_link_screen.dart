@@ -71,6 +71,9 @@ class _AddLinkScreenState extends ConsumerState<AddLinkScreen> {
       _link = link;
       _result = null;
       _base = null;
+      discardImages(_screenshots);
+      _screenshots.clear();
+      _ocrLines.clear();
       _recompute();
     });
     final api = ref.read(apiProvider);
