@@ -108,6 +108,7 @@ export async function importLink(input: string, fetcher: Fetcher, env: { metaTok
   };
   let caption: string | null = null;
   let unavailable = false;
+  let blocked = false;
 
   if (link.platform === "tiktok") {
     try {
@@ -117,7 +118,7 @@ export async function importLink(input: string, fetcher: Fetcher, env: { metaTok
         receipt.creatorName = data.author_name ?? null;
         receipt.creatorHandle = data.author_unique_id ? `@${data.author_unique_id}` : receipt.creatorHandle;
         receipt.thumbnailUrl = data.thumbnail_url ?? null;
-        layer("oembed", caption ? "ok" : "none", caption ? null : "No caption on this post");
+        layer("oembed", caption ? "ok" : "none", caption ? null : "TikTok didn't share a caption");
       } else {
         unavailable = status === 400 || status === 404;
         layer("oembed", "error", unavailable ? "Post is private or removed" : `TikTok returned ${status}`);
@@ -149,8 +150,9 @@ export async function importLink(input: string, fetcher: Fetcher, env: { metaTok
     try {
       const res = await fetcher(pageUrl);
       if (res.status >= 400) {
-        unavailable ||= link.platform === "web";
-        layer("linked_page", "error", `Page returned ${res.status}`);
+        blocked ||= [401, 402, 403, 429].includes(res.status);
+        unavailable ||= link.platform === "web" && [404, 410].includes(res.status);
+        layer("linked_page", "error", blocked ? "The site didn't let us read the page" : `Page returned ${res.status}`);
       } else {
         const found = extractJsonLdRecipe(res.body);
         pageTitleText = pageTitle(res.body);
@@ -186,7 +188,14 @@ export async function importLink(input: string, fetcher: Fetcher, env: { metaTok
   const name = PLATFORM_NAME[link.platform];
   if (unavailable && !draft) {
     classification = "unavailable";
-    message = `This post is private, removed, or not public on ${name}. Paste the caption or add a screenshot instead.`;
+    message =
+      link.platform === "web"
+        ? "This page doesn't exist anymore. Paste the recipe text or add a screenshot instead."
+        : `This post is private, removed, or not public on ${name}. Paste the caption or add a screenshot instead.`;
+  } else if (blocked && !draft && link.platform === "web") {
+    message = "This site doesn't let apps read its pages. Paste the recipe text or add a screenshot.";
+  } else if (!draft && link.platform === "tiktok" && !caption) {
+    message = "TikTok didn't share this post's caption. Paste the caption or add a screenshot.";
   } else if (!draft && link.platform !== "web" && caption && !hasContent(captionDraft)) {
     classification = "not_recipe";
     message = "The caption doesn't include a recipe. If it's in the video, add a screenshot of the recipe or paste it.";
