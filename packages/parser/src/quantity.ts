@@ -87,7 +87,8 @@ export function convertQuantity(q: number, max: number | null, unit: string | nu
   if (max === null) return { quantity: a.q, quantityMax: null, unit: a.unit };
   // Convert the upper bound into the same unit as the lower one.
   const ratio = q === 0 ? null : a.q / q;
-  const b = ratio === null ? fn(max, unit) : { q: (system === "metric" ? roundMetric : (x: number) => roundTo(x, 0.25))(max * ratio), unit: a.unit };
+  const round = (x: number) => (system === "us" ? roundTo(x, 0.25) : a.unit === "l" || a.unit === "kg" ? roundTo(x, 0.05) : roundMetric(x));
+  const b = ratio === null ? fn(max, unit) : { q: round(max * ratio), unit: a.unit };
   return { quantity: a.q, quantityMax: b?.q ?? null, unit: a.unit };
 }
 

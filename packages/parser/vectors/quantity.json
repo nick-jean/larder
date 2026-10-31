@@ -10,6 +10,7 @@
     { "quantity": 1, "max": null, "unit": "kg", "system": "us", "expect": { "quantity": 2.25, "quantityMax": null, "unit": "lb" } },
     { "quantity": 5, "max": null, "unit": "ml", "system": "us", "expect": { "quantity": 1, "quantityMax": null, "unit": "tsp" } },
     { "quantity": 2, "max": 3, "unit": "tbsp", "system": "metric", "expect": { "quantity": 30, "quantityMax": 45, "unit": "ml" } },
+    { "quantity": 2, "max": 3, "unit": "quart", "system": "metric", "expect": { "quantity": 1.9, "quantityMax": 2.85, "unit": "l" } },
     { "quantity": 1, "max": null, "unit": "clove", "system": "metric", "expect": null },
     { "quantity": 100, "max": null, "unit": "g", "system": "metric", "expect": null }
   ]
