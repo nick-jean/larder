@@ -203,7 +203,7 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
       mode = "ingredients";
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) addIngredient(text, l);
-    else if (steps.length > 0 || isStepLike(text)) addStep(text, l);
+    else if (steps.length > 0 || ingredients.length > 0 || isStepLike(text)) addStep(text, l);
     else if (!title) {
       title = cleanTitle(text);
       titleConf = minConfidence(provenance === "linked_page" ? "high" : "medium", ocrConfidence(l.confidence));
