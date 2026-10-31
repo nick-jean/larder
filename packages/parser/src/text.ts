@@ -42,6 +42,8 @@ const SERVINGS = /\b(?:serves|servings?|makes|yields?|portions?)\s*:?\s*(\d+)(?:
 const TIME_LABEL = /\b(prep|preparation|cook|cooking|bake|baking|total|active|ready in)\b(?:\s*time)?\s*:?/i;
 const TEMP = /\b\d{3}\s*°?\s*(?:f|c|degrees)\b|°/i;
 
+const UNQUANTIFIED = /^(?:some|a few|a little)\b|\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b/i;
+
 export function isStepLike(line: string): boolean {
   const t = stripBullet(line);
   if (NUMBERED.test(t) && !looksLikeIngredient(t.replace(NUMBERED, ""))) return true;
@@ -203,8 +205,8 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
       mode = "ingredients";
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) addIngredient(text, l);
-    // Short unquantified lines right after ingredients ("Salt to taste") are still ingredients.
-    else if (ingredients.length > 0 && steps.length === 0 && !isStepLike(text) && text.length <= 40 && !/[.!?]$/.test(text)) addIngredient(text, l);
+    // Unquantified ingredients right after the list ("Salt to taste", "Parsley, for serving").
+    else if (ingredients.length > 0 && steps.length === 0 && UNQUANTIFIED.test(text) && !isStepLike(text)) addIngredient(text, l);
     else if (steps.length > 0 || ingredients.length > 0 || isStepLike(text)) addStep(text, l);
     else if (!title) {
       title = cleanTitle(text);
