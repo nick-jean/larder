@@ -1,0 +1,14 @@
+#!/bin/sh
+# graphify: rebuild graphify-out/graph.json from the staged tree and commit it with the code that changed it.
+# Skipped when graphify isn't installed or GRAPHIFY_SKIP_HOOK=1.
+command -v graphify >/dev/null 2>&1 || exit 0
+[ "${GRAPHIFY_SKIP_HOOK:-0}" != 1 ] && [ -f graphify-out/graph.json ] || exit 0
+git diff --cached --quiet -- . ':!graphify-out/graph.json' && exit 0
+# Build from the index so unstaged edits and untracked files stay out of the committed graph.
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+git checkout-index -a --prefix="$tmp/" &&
+  cp -R graphify-out/. "$tmp/graphify-out/" &&
+  (gitdir=$(git rev-parse --absolute-git-dir) && cd "$tmp" && GIT_DIR="$gitdir" GIT_WORK_TREE="$tmp" PYTHONHASHSEED=0 graphify update . >/dev/null) &&
+  cp "$tmp/graphify-out/graph.json" graphify-out/graph.json &&
+  git add graphify-out/graph.json

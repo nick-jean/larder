@@ -1,0 +1,5 @@
+node_modules/
+
+# Graphify: only the graph is tracked
+graphify-out/*
+!graphify-out/graph.json
