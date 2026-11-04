@@ -24,7 +24,7 @@ final _ingredientsHdr = RegExp(r"^(?:ingredients?|you(?:'|’)?ll need|what you(
 final _stepsHdr = RegExp(r'^(?:instructions|directions|method|steps|preparation|how to make(?: it)?|to make)\s*:?\s*$', caseSensitive: false);
 final _numbered = RegExp(r'^(?:step\s*)?(\d{1,2})\s*[.):]\s*', caseSensitive: false);
 const _verbs =
-    'preheat|heat|mix|stir|add|bake|boil|combine|whisk|cook|pour|serve|place|season|melt|bring|remove|transfer|let|cut|chop|slice|dice|toss|fold|simmer|roast|fry|saute|sauté|grill|blend|beat|spread|sprinkle|top|drain|reserve|cover|line|grease|knead|roll|marinate|garnish|enjoy|set|put|make|start|finish|wash|peel|mince|grate|press|chill|refrigerate|freeze|cream|microwave|air fry|layer|repeat|flip|reduce|turn|allow|use|in a|in another|once|when|while|meanwhile|then|after|finally';
+    'preheat|heat|mix|stir|add|bake|boil|combine|whisk|cook|pour|serve|place|season|melt|bring|remove|transfer|let|cut|chop|slice|dice|toss|fold|simmer|roast|fry|saute|sauté|grill|blend|beat|spread|sprinkle|top|drain|reserve|cover|line|grease|knead|roll|marinate|garnish|enjoy|set|put|make|start|finish|wash|peel|mince|grate|press|chill|rest|soak|cool|wait|shape|scoop|brush|wrap|strain|refrigerate|freeze|cream|microwave|air fry|layer|repeat|flip|reduce|turn|allow|use|in a|in another|once|when|while|meanwhile|then|after|finally';
 final _imperative = RegExp('^(?:$_verbs)\\b', caseSensitive: false);
 final _servings = RegExp(
   r'\b(?:serves|servings?|makes|yields?|portions?)\s*:?\s*(\d+)(?:\s*(?:-|–|to)\s*\d+)?|(\d+)(?:\s*(?:-|–|to)\s*\d+)?\s*(?:servings|portions|people)\b',
@@ -38,7 +38,7 @@ final _noise = RegExp(
 );
 
 final _unquantified = RegExp(
-  r'^(?:some|a few|a little)\b|\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b',
+  r'\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b',
   caseSensitive: false,
 );
 
@@ -155,7 +155,7 @@ RecipeDraft structureLines(List<InputLine> input, String provenance, {required S
     steps.add(StepLine(id: newId(), text: body, confidence: conf, provenance: provenance, box: l.box));
   }
 
-  void addIngredient(String text, InputLine l) {
+  void addIngredient(String text, InputLine l, [Confidence cap = Confidence.high]) {
     final p = parseIngredientLine(text);
     if (p.item.isEmpty && !p.isSection) return;
     ingredients.add(IngredientLine(
@@ -168,7 +168,7 @@ RecipeDraft structureLines(List<InputLine> input, String provenance, {required S
       unitRaw: p.unitRaw,
       item: p.item,
       note: p.note,
-      confidence: minConfidence([p.confidence, ocrConfidence(l.confidence)]),
+      confidence: minConfidence([p.confidence, ocrConfidence(l.confidence), cap]),
       provenance: provenance,
       box: l.box,
     ));
@@ -206,9 +206,14 @@ RecipeDraft structureLines(List<InputLine> input, String provenance, {required S
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) {
       addIngredient(text, l);
-    } else if (ingredients.isNotEmpty && steps.isEmpty && _unquantified.hasMatch(text) && !isStepLike(text)) {
-      // Unquantified ingredients right after the list ("Salt to taste", "Parsley, for serving").
-      addIngredient(text, l);
+    } else if (ingredients.isNotEmpty &&
+        steps.isEmpty &&
+        text.length <= 40 &&
+        !RegExp(r'[.!?]$').hasMatch(text) &&
+        (_unquantified.hasMatch(text) || !isStepLike(text))) {
+      // Short unquantified lines right after the list are ingredients ("Salt to taste", "Fresh basil");
+      // without a cue like "to taste" they are low confidence so the user confirms them in review.
+      addIngredient(text, l, _unquantified.hasMatch(text) ? Confidence.high : Confidence.low);
     } else if (steps.isNotEmpty || ingredients.isNotEmpty || isStepLike(text)) {
       addStep(text, l);
     } else if (title.isEmpty) {
