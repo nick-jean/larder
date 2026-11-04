@@ -2,8 +2,8 @@
   {
     "name": "unquantified ingredient without headers",
     "provenance": "pasted_text",
-    "text": "Garlic toast\n2 slices bread\n1 clove garlic\nSalt to taste\nRest overnight\nToast the bread.",
-    "expect": { "title": "Garlic toast", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 3, "steps": ["Rest overnight", "Toast the bread."] }
+    "text": "Garlic toast\n2 slices bread\n1 clove garlic\nSalt to taste\nFresh basil\nRest overnight\nToast the bread.",
+    "expect": { "title": "Garlic toast", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 4, "steps": ["Rest overnight", "Toast the bread."] }
   },
   {
     "name": "caption with headers",

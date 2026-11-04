@@ -28,7 +28,9 @@ export function groundDraft(draft: RecipeDraft, source: string): RecipeDraft {
   const raw = source.split("\n");
   const lines = raw.map((l, i) => {
     const p = parseIngredientLine(l);
-    const t = p.quantity !== null && !p.item ? `${l} ${raw[i + 1] ?? ""}` : l;
+    const next = raw[i + 1] ?? "";
+    const wrapped = p.quantity !== null && !p.item && parseIngredientLine(next).quantity === null;
+    const t = wrapped ? `${l} ${next}` : l;
     return { nums: numbersIn(t), words: words(t) };
   });
   const hasFor = (n: number, item: string) => {

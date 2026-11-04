@@ -36,13 +36,13 @@ const INGREDIENTS_HDR = /^(?:ingredients?|you(?:'|’)?ll need|what you(?:'|’)
 const STEPS_HDR = /^(?:instructions|directions|method|steps|preparation|how to make(?: it)?|to make)\s*:?\s*$/i;
 const NUMBERED = /^(?:step\s*)?(\d{1,2})\s*[.):]\s*/i;
 const VERBS =
-  "preheat|heat|mix|stir|add|bake|boil|combine|whisk|cook|pour|serve|place|season|melt|bring|remove|transfer|let|cut|chop|slice|dice|toss|fold|simmer|roast|fry|saute|sauté|grill|blend|beat|spread|sprinkle|top|drain|reserve|cover|line|grease|knead|roll|marinate|garnish|enjoy|set|put|make|start|finish|wash|peel|mince|grate|press|chill|refrigerate|freeze|cream|microwave|air fry|layer|repeat|flip|reduce|turn|allow|use|in a|in another|once|when|while|meanwhile|then|after|finally";
+  "preheat|heat|mix|stir|add|bake|boil|combine|whisk|cook|pour|serve|place|season|melt|bring|remove|transfer|let|cut|chop|slice|dice|toss|fold|simmer|roast|fry|saute|sauté|grill|blend|beat|spread|sprinkle|top|drain|reserve|cover|line|grease|knead|roll|marinate|garnish|enjoy|set|put|make|start|finish|wash|peel|mince|grate|press|chill|rest|soak|cool|wait|shape|scoop|brush|wrap|strain|refrigerate|freeze|cream|microwave|air fry|layer|repeat|flip|reduce|turn|allow|use|in a|in another|once|when|while|meanwhile|then|after|finally";
 const IMPERATIVE = new RegExp(`^(?:${VERBS})\\b`, "i");
 const SERVINGS = /\b(?:serves|servings?|makes|yields?|portions?)\s*:?\s*(\d+)(?:\s*(?:-|–|to)\s*\d+)?|(\d+)(?:\s*(?:-|–|to)\s*\d+)?\s*(?:servings|portions|people)\b/i;
 const TIME_LABEL = /\b(prep|preparation|cook|cooking|bake|baking|total|active|ready in)\b(?:\s*time)?\s*:?/i;
 const TEMP = /\b\d{3}\s*°?\s*(?:f|c|degrees)\b|°/i;
 
-const UNQUANTIFIED = /^(?:some|a few|a little)\b|\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b/i;
+const UNQUANTIFIED = /\b(?:to taste|for (?:serving|garnish|topping|frying|dusting|greasing)|optional|as needed|a pinch|a handful|a dash)\b/i;
 
 export function isStepLike(line: string): boolean {
   const t = stripBullet(line);
@@ -155,7 +155,7 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
     steps.push({ id: newId(), text: body, confidence: conf, provenance, box: l.box ?? null });
   };
 
-  const addIngredient = (text: string, l: InputLine) => {
+  const addIngredient = (text: string, l: InputLine, cap: Confidence = "high") => {
     const p = parseIngredientLine(text);
     if (!p.item && !p.isSection) return;
     ingredients.push({
@@ -168,7 +168,7 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
       unitRaw: p.unitRaw,
       item: p.item,
       note: p.note,
-      confidence: minConfidence(p.confidence, ocrConfidence(l.confidence)),
+      confidence: minConfidence(p.confidence, ocrConfidence(l.confidence), cap),
       provenance,
       box: l.box ?? null,
     });
@@ -205,8 +205,10 @@ export function structureLines(input: InputLine[], provenance: Provenance, optio
       mode = "ingredients";
       addIngredient(text, l);
     } else if (looksLikeIngredient(text)) addIngredient(text, l);
-    // Unquantified ingredients right after the list ("Salt to taste", "Parsley, for serving").
-    else if (ingredients.length > 0 && steps.length === 0 && UNQUANTIFIED.test(text) && !isStepLike(text)) addIngredient(text, l);
+    // Short unquantified lines right after the list are ingredients ("Salt to taste", "Fresh basil");
+    // without a cue like "to taste" they are low confidence so the user confirms them in review.
+    else if (ingredients.length > 0 && steps.length === 0 && text.length <= 40 && !/[.!?]$/.test(text) && (UNQUANTIFIED.test(text) || !isStepLike(text)))
+      addIngredient(text, l, UNQUANTIFIED.test(text) ? "high" : "low");
     else if (steps.length > 0 || ingredients.length > 0 || isStepLike(text)) addStep(text, l);
     else if (!title) {
       title = cleanTitle(text);
