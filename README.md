@@ -10,7 +10,7 @@ Spec: [Larder design doc (Notion)](https://app.notion.com/p/Larder-Recipe-Keeper
 | --- | --- |
 | `packages/parser` | Shared TypeScript source of truth: recipe schema (Zod), ingredient-line parser, caption/OCR text → recipe structurer with per-field confidence, schema.org Recipe JSON-LD extractor, link classifier, scaling and US⇄metric conversion. `vectors/*.json` are shared test vectors the app's Dart port must also pass. |
 | `web` | Next.js on Vercel: landing + privacy pages and the `/api/v1` API (MongoDB, Firebase auth). |
-| `app` | Flutter app for iOS and Android (coming in a follow-up PR). |
+| `app` | Flutter app for iOS and Android: offline SQLite library with search and filters, paste-link import, cookbook/handwritten/screenshot scan with on-device OCR, review & edit with confidence highlights, recipe detail with scaling and US⇄metric, export, Firebase sign-in + sync. `lib/parser` is a Dart port of `packages/parser`, tested against the same vectors. |
 
 ## API (`/api/v1`)
 
@@ -43,3 +43,14 @@ Example:
 curl -s localhost:3000/api/v1/imports/text -H 'authorization: Bearer dev:me' -H 'content-type: application/json' \
   -d '{"text":"Toast\n2 slices bread\nToast the bread."}'
 ```
+
+### App
+
+```sh
+cd app
+flutter analyze && flutter test
+# Against the local demo API (Android emulator: use http://10.0.2.2:3000):
+flutter run --dart-define=LARDER_API=http://localhost:3000 --dart-define=LARDER_DEV_UID=me
+```
+
+Without `LARDER_API` the app runs fully offline (links are kept and the caption is pasted or screenshotted). Without Firebase config files (`GoogleService-Info.plist`, `google-services.json`) it runs in guest mode.
