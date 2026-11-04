@@ -1,0 +1,7 @@
+packages:
+  - web
+  - packages/*
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  mongodb-memory-server: true

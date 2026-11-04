@@ -1,0 +1,11 @@
+[
+  { "input": "https://www.tiktok.com/@nonnapia/video/7301234567890123456?is_from_webapp=1&sender_device=pc", "platform": "tiktok", "canonicalUrl": "https://www.tiktok.com/@nonnapia/video/7301234567890123456", "creatorHandle": "@nonnapia", "postId": "7301234567890123456", "isShortLink": false },
+  { "input": "https://vm.tiktok.com/ZMabc123/", "platform": "tiktok", "canonicalUrl": "https://vm.tiktok.com/ZMabc123/", "creatorHandle": null, "postId": null, "isShortLink": true },
+  { "input": "instagram.com/reel/C1a2B3c4D5e/?igsh=abc", "platform": "instagram", "canonicalUrl": "https://www.instagram.com/reel/C1a2B3c4D5e/", "creatorHandle": null, "postId": "C1a2B3c4D5e", "isShortLink": false },
+  { "input": "https://www.instagram.com/p/Cxyz987/", "platform": "instagram", "canonicalUrl": "https://www.instagram.com/p/Cxyz987/", "creatorHandle": null, "postId": "Cxyz987", "isShortLink": false },
+  { "input": "https://www.facebook.com/reel/1234567890", "platform": "facebook", "canonicalUrl": "https://www.facebook.com/reel/1234567890", "creatorHandle": null, "postId": "1234567890", "isShortLink": false },
+  { "input": "https://fb.watch/abcDEF/", "platform": "facebook", "canonicalUrl": "https://fb.watch/abcDEF/", "creatorHandle": null, "postId": null, "isShortLink": true },
+  { "input": "https://www.seriouseats.com/best-chili-recipe?utm_source=x#comments", "platform": "web", "canonicalUrl": "https://www.seriouseats.com/best-chili-recipe", "creatorHandle": null, "postId": null, "isShortLink": false },
+  { "input": "not a link", "platform": null },
+  { "input": "ftp://example.com/x", "platform": null }
+]

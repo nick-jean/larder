@@ -1,0 +1,32 @@
+[
+  {
+    "name": "unquantified ingredient without headers",
+    "provenance": "pasted_text",
+    "text": "Garlic toast\n2 slices bread\n1 clove garlic\nSalt to taste\nFresh basil\nRest overnight\nToast the bread.",
+    "expect": { "title": "Garlic toast", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 4, "steps": ["Rest overnight", "Toast the bread."] }
+  },
+  {
+    "name": "caption with headers",
+    "provenance": "caption",
+    "text": "Creamy Tuscan Chicken 🍗\nServes 4 · Prep 10 min · Cook 25 min\nIngredients:\n2 chicken breasts\n1 cup heavy cream\n½ cup parmesan, grated\nSalt and pepper to taste\nInstructions:\n1. Season the chicken and sear 5 minutes per side.\n2. Add cream and parmesan, simmer until\nthickened.\n3. Serve over pasta.\n#dinner #easyrecipes",
+    "expect": { "title": "Creamy Tuscan Chicken", "servings": 4, "prepMinutes": 10, "cookMinutes": 25, "totalMinutes": null, "ingredientCount": 4, "steps": ["Season the chicken and sear 5 minutes per side.", "Add cream and parmesan, simmer until thickened.", "Serve over pasta."] }
+  },
+  {
+    "name": "caption without headers",
+    "provenance": "caption",
+    "text": "Easy garlic noodles\n200g spaghetti\n4 cloves garlic\n3 tbsp butter\nBoil the noodles. Melt butter with garlic and toss.\nFollow for more recipes!",
+    "expect": { "title": "Easy garlic noodles", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 3, "steps": ["Boil the noodles. Melt butter with garlic and toss."] }
+  },
+  {
+    "name": "chatter only, no recipe",
+    "provenance": "caption",
+    "text": "The best pasta I've ever had 😍 link in bio",
+    "expect": { "title": "The best pasta I've ever had", "servings": null, "prepMinutes": null, "cookMinutes": null, "totalMinutes": null, "ingredientCount": 0, "steps": [] }
+  },
+  {
+    "name": "sections and total time",
+    "provenance": "pasted_text",
+    "text": "Lemon Bars\nMakes 16 · Total 1 hr 20 min\nFor the crust:\n1 cup flour\n½ cup butter\nFor the filling:\n2 eggs\n1 cup sugar\nMethod\nPress crust into pan and bake 15 minutes.\nWhisk filling, pour over crust and bake 20 minutes.",
+    "expect": { "title": "Lemon Bars", "servings": 16, "prepMinutes": null, "cookMinutes": null, "totalMinutes": 80, "ingredientCount": 6, "steps": ["Press crust into pan and bake 15 minutes.", "Whisk filling, pour over crust and bake 20 minutes."] }
+  }
+]
