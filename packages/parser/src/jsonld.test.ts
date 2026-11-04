@@ -73,4 +73,16 @@ describe("groundDraft", () => {
     const draft = structureText("Bread\n3 cups bread flour\nMix and bake.", "llm");
     expect(groundDraft(draft, source).ingredients[0]).toMatchObject({ quantity: 3, item: "bread flour" });
   });
+
+  it("does not let a bare quantity line ground the next ingredient", () => {
+    const source = "Cake\n3 cups\n2 tablespoons butter\nMix.";
+    const draft = structureText("Cake\n3 cups butter\nMix.", "llm");
+    expect(groundDraft(draft, source).ingredients[0].quantity).toBeNull();
+  });
+
+  it("keeps plain trailing ingredients for review", () => {
+    const d = structureText("Pasta\n200 g spaghetti\nFresh basil\nA few minutes later, remove the pan.", "caption");
+    expect(d.ingredients[1]).toMatchObject({ item: "Fresh basil", confidence: "low" });
+    expect(d.steps.map((s) => s.text)).toEqual(["A few minutes later, remove the pan."]);
+  });
 });
